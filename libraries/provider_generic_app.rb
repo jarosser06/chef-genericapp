@@ -8,7 +8,9 @@ require 'chef/resource/template'
 require 'chef/provider/template'
 require 'chef/resource/file'
 require 'chef/provider/file'
-require 'mixlib/shellout'
+require 'chef/mixin/shell_out'
+
+include Chef::Mixin::ShellOut
 
 class Chef
   class Provider
@@ -18,20 +20,35 @@ class Chef
         @current_resource
       end
 
-      ## TODO: Throw an error if nginx or apache aren't in the run_list
       def action_deploy
+        check_recipes
         base_path.run_action :create
         unless new_resource.deploy_key.nil?
           setup_ssh_wrapper
         end
 
         unless new_resource.updated_by_last_action?
-          new_resource.updated_by_last_action apache_setup
+          # Send self the webserver_setup method (nginx_setup or apache_setup)
+          new_resource.updated_by_last_action send("#{new_resource.web_server}_setup".to_sym)
         end
       end
 
       def action_remove
 
+      end
+
+      # Going to make sure that the web server service will exist
+      # Could just look for the service in the resource list instead I suppose
+      def check_recipes
+        if new_resource.web_server == 'apache'
+          web_server_recipe = "apache2::default"
+        else
+          web_server_recipe = "#{new_resource.web_server}::default"
+        end
+
+        unless run_context.loaded_recipes.include?(web_server_recipe)
+          Chef::Application.fatal!("Did not include the #{web_server_recipe} recipe")
+        end
       end
 
       def base_path
@@ -121,8 +138,8 @@ class Chef
 
         if apache_conf.updated_by_last_action?
           unless apache_site_enabled?
-            Mixlib::ShellOut.new("/usr/sbin/a2ensite #{new_resource.name}.conf").run_command
             Chef::Log.debug("Enabling Apache site #{new_resource.name}")
+            shell_out("/usr/sbin/a2ensite #{new_resource.name}.conf")
           end
           return true
         else
@@ -158,7 +175,7 @@ class Chef
           unless nginx_site_enabled?
             enable_script = "#{run_context.node.nginx.script_dir}/nxensite #{new_resource.name}"
             Chef::Log.debug("Enabling Nginx site #{new_resource.name}")
-            Chef::Mixin::ShellOut.new(enable_script).run_command
+            shell_out(enable_script)
           end
           return true
         else
