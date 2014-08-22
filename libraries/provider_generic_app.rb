@@ -23,8 +23,14 @@ class Chef
       def action_deploy
         check_recipes
         base_path.run_action :create
-        unless new_resource.deploy_key.nil?
+        unless new_resource.respond_to? :deploy_key
           setup_ssh_wrapper
+        end
+
+        git_repo.run_action :sync
+        new_resource.updated_by_last_action if git_repo.updated_by_last_action?
+        if git_repo.updated_by_last_action?
+          callback(:after_checkout, new_resource.after_checkout)
         end
 
         unless new_resource.updated_by_last_action?
@@ -35,6 +41,11 @@ class Chef
 
       def action_remove
 
+      end
+
+      def callback(what, callback_code=nil)
+        Chef::Log.info "#{@new_resource} running callback #{what}"
+        recipe_eval(&callback_code)
       end
 
       # Going to make sure that the web server service will exist
@@ -62,12 +73,13 @@ class Chef
 
       def git_repo
         return @git_repo unless @git_repo.nil?
-        @git_repo = Chef::Resource::Git.new(new_resource.repo, run_context)
+        @git_repo = Chef::Resource::Git.new(new_resource.name, run_context)
         @git_repo.user new_resource.owner
         @git_repo.group new_resource.group
-        @git_repo.ssh_wrapper @ssh_wrapper.name unless new_resource.depoy_key.nil?
+        @git_repo.ssh_wrapper @ssh_wrapper.name unless new_resource.respond_to? :deploy_key
+        @git_repo.repository new_resource.repository
         @git_repo.revision unless new_resource.revision.nil?
-        @git_repo.path new_resource.path
+        @git_repo.destination new_resource.path
         @git_repo
       end
 

@@ -14,7 +14,8 @@ class Chef
       def deploy_key(arg=nil)
         set_or_return(:deploy_key,
                       arg,
-                      kind_of: String)
+                      kind_of: String,
+                      default: nil)
       end
 
       def site_names(arg=nil)
@@ -36,6 +37,13 @@ class Chef
                       arg,
                       kind_of: String,
                       required: true)
+      end
+
+      def revision(arg=nil)
+        set_or_return(:revision,
+                      arg,
+                      kind_of: String,
+                      default: 'master')
       end
 
       def owner(arg=nil)
@@ -72,6 +80,13 @@ class Chef
                       arg,
                       kind_of: Hash,
                       default: {})
+      end
+
+      def after_checkout(arg=nil, &block)
+        arg ||= block
+        set_or_return(:after_checkout,
+                      arg,
+                      kind_of: Proc)
       end
     end
   end
