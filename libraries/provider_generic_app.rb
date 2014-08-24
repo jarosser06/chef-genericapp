@@ -82,7 +82,7 @@ class Chef
         @git_repo.group new_resource.group
         @git_repo.ssh_wrapper @ssh_wrapper.name unless new_resource.respond_to? :deploy_key
         @git_repo.repository new_resource.repository
-        @git_repo.revision unless new_resource.revision.nil?
+        @git_repo.revision new_resource.revision
         @git_repo.destination new_resource.path
         @git_repo
       end
