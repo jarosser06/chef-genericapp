@@ -21,15 +21,8 @@ class Chef
       end
 
       def action_deploy
-        check_recipes
-        base_path.run_action :create
-        unless new_resource.respond_to? :deploy_key
-          setup_ssh_wrapper
-        end
-
-        git_repo.run_action :sync
-        new_resource.updated_by_last_action if git_repo.updated_by_last_action?
-        if git_repo.updated_by_last_action?
+        run_checkout
+        if new_resource.updated_by_last_action?
           callback(:after_checkout, new_resource.after_checkout)
         end
 
@@ -60,6 +53,17 @@ class Chef
         unless run_context.loaded_recipes.include?(web_server_recipe)
           Chef::Application.fatal!("Did not include the #{web_server_recipe} recipe")
         end
+      end
+
+      def run_checkout
+        check_recipes
+        base_path.run_action :create
+        unless new_resource.respond_to? :deploy_key
+          setup_ssh_wrapper
+        end
+
+        git_repo.run_action :sync
+        new_resource.updated_by_last_action true if git_repo.updated_by_last_action?
       end
 
       def base_path
