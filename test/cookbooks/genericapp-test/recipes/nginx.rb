@@ -1,4 +1,6 @@
 include_recipe 'genericapp-test'
+
+node.default['nginx']['default_site_enabled'] = false
 include_recipe 'nginx'
 
 generic_app 'magic.com' do

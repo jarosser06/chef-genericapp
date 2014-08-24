@@ -190,7 +190,7 @@ class Chef
 
         if nginx_conf.updated_by_last_action?
           unless nginx_site_enabled?
-            enable_script = "#{run_context.node.nginx.script_dir}/nxensite #{new_resource.name}"
+            enable_script = "#{run_context.node.nginx.script_dir}/nxensite #{new_resource.name}.conf"
             Chef::Log.debug("Enabling Nginx site #{new_resource.name}")
             shell_out(enable_script)
           end
