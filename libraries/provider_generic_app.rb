@@ -69,7 +69,7 @@ class Chef
         @base_path = Chef::Resource::Directory.new(new_resource.path, run_context)
         @base_path.user new_resource.owner
         @base_path.group new_resource.group
-        @base_path.mode 0754
+        @base_path.mode 0755
         @base_path
       end
 
