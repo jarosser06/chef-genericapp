@@ -22,14 +22,12 @@ class Chef
 
       def action_deploy
         run_checkout
+
+        # Only run callbacks if something has changed
         if new_resource.updated_by_last_action?
           callback(:after_checkout, new_resource.after_checkout)
         end
-
-        unless new_resource.updated_by_last_action?
-          # Send self the webserver_setup method (nginx_setup or apache_setup)
-          new_resource.updated_by_last_action send("#{new_resource.web_server}_setup".to_sym)
-        end
+        web_server_setup
       end
 
       def action_remove
@@ -119,6 +117,10 @@ class Chef
         @deploy_key
       end
 
+      def web_server_setup
+        send("#{new_resource.web_server}_setup".to_sym)
+      end
+
       def web_conf
         if new_resource.web_template.nil?
           "generic-#{new_resource.web_server}.erb"
@@ -157,9 +159,8 @@ class Chef
             Chef::Log.debug("Enabling Apache site #{new_resource.name}")
             shell_out("/usr/sbin/a2ensite #{new_resource.name}.conf")
           end
-          return true
-        else
-          return false
+
+          new_resource.updated_by_last_action true
         end
       end
 
@@ -193,9 +194,8 @@ class Chef
             Chef::Log.debug("Enabling Nginx site #{new_resource.name}")
             shell_out(enable_script)
           end
-          return true
-        else
-          return false
+
+          new_resource.updated_by_last_action true
         end
       end
 
