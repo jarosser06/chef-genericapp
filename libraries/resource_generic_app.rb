@@ -60,6 +60,18 @@ class Chef
                       required: true)
       end
 
+      def error_log(arg=nil)
+        set_or_return(:web_errorlog,
+                      arg,
+                      kind_of: String)
+      end
+
+      def access_log(arg=nil)
+        set_or_return(:web_accesslog,
+                      arg,
+                      kind_of: String)
+      end
+
       def web_server(arg=nil)
         set_or_return(:web_server,
                       arg,

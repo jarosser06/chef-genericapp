@@ -147,6 +147,8 @@ class Chef
         apache_conf.source web_conf
         apache_conf.variables({document_root: new_resource.path,
                                server_name: new_resource.name,
+                               error_log: error_log,
+                               access_log: access_log,
                                params: new_resource.web_params})
         apache_conf.owner run_context.node.apache.user
         apache_conf.group run_context.node.apache.group
@@ -181,6 +183,8 @@ class Chef
         nginx_conf.source web_conf
         nginx_conf.variables({document_root: new_resource.path,
                               server_name: new_resource.name,
+                              error_log: error_log,
+                              access_log: access_log,
                               params: new_resource.web_params})
         nginx_conf.owner run_context.node.nginx.user
         nginx_conf.group run_context.node.nginx.group
@@ -204,6 +208,31 @@ class Chef
         conf_name = "#{new_resource.name}.conf"
         ::File.symlink?("#{nginx_dir}/sites-enabled/#{conf_name}") ||
         ::File.symlink?("#{nginx_dir}/sites-enabled/000-#{conf_name}")
+      end
+
+      def log_dir
+        case new_resource.web_server
+        when 'nginx'
+          return run_context.node.nginx.log_dir
+        when 'apache'
+          return run_context.node.apache.log_dir
+        end
+      end
+
+      def error_log
+        if new_resource.error_log.nil?
+          return ::File.join(log_dir, "#{new_resource.name}-error.log")
+        else
+          return new_resource.error_log
+        end
+      end
+
+      def access_log
+        if new_resource.access_log.nil?
+          return ::File.join(log_dir, "#{new_resource.name}-access.log")
+        else
+          return new_resource.access_log
+        end
       end
     end
   end

@@ -1,5 +1,8 @@
 Listen 80
 <VirtualHost *:80>
-    DocumentRoot <%= @document_root -%>
-    ServerName <%= @server_name -%>
+    DocumentRoot <%= @document_root %>
+    ServerName <%= @server_name %>
+    LogLevel info
+    ErrorLog <%= @error_log %>
+    CustomLog <%= @access_log %> combined
 </VirtualHost>
