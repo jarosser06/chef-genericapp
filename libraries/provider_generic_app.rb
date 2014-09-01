@@ -53,7 +53,19 @@ class Chef
         end
       end
 
+      # Install git if we cant find the git resource included
+      def install_git
+        begin
+          run_context.resource_collection.include(package: 'git')
+        rescue
+          git_package = Chef::Resource::Package.new('git', run_context)
+          git_package.name 'git'
+          git_package.run_action :install
+        end
+      end
+
       def run_checkout
+        install_git
         check_recipes
         base_path.run_action :create
         unless new_resource.respond_to? :deploy_key
@@ -67,6 +79,7 @@ class Chef
       def base_path
         return @base_path unless @base_path.nil?
         @base_path = Chef::Resource::Directory.new(new_resource.path, run_context)
+        @base_path.recursive true
         @base_path.user new_resource.owner
         @base_path.group new_resource.group
         @base_path.mode 0755

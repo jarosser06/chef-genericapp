@@ -1,4 +1,3 @@
-include_recipe 'genericapp-test'
 include_recipe 'apache2'
 
 generic_app 'magic.com' do
