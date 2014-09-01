@@ -6,6 +6,7 @@ generic_app 'magic.com' do
   owner node['nginx']['user']
   group node['nginx']['group']
   web_server 'nginx'
+  site_names %w(www.magic.com dev.magic.com)
   path '/var/www/magic'
   after_checkout do
     file '/var/www/magic/test.txt' do

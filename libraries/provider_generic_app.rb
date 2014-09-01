@@ -160,6 +160,7 @@ class Chef
         apache_conf.source web_conf
         apache_conf.variables({document_root: new_resource.path,
                                server_name: new_resource.name,
+                               server_aliases: new_resource.site_names,
                                error_log: error_log,
                                access_log: access_log,
                                params: new_resource.web_params})
@@ -196,6 +197,7 @@ class Chef
         nginx_conf.source web_conf
         nginx_conf.variables({document_root: new_resource.path,
                               server_name: new_resource.name,
+                              site_names: new_resource.site_names,
                               error_log: error_log,
                               access_log: access_log,
                               params: new_resource.web_params})

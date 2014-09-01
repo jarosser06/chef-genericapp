@@ -1,7 +1,7 @@
-Listen 80
 <VirtualHost *:80>
     DocumentRoot <%= @document_root %>
     ServerName <%= @server_name %>
+    ServerAlias <%= @server_aliases.join(' ') %>
     LogLevel info
     ErrorLog <%= @error_log %>
     CustomLog <%= @access_log %> combined
